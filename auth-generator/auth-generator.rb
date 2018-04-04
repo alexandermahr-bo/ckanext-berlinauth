@@ -17,6 +17,8 @@ class AuthGenerator
         code = [
             "\# encoding: utf-8" ,
             "" ,
+            "\# This is auto-generated code!" ,
+            "" ,
             "import ckan.plugins as plugins" ,
         ]
         return _generate_code(code)
@@ -39,11 +41,18 @@ class AuthGenerator
         return _generate_code(code)
     end
     
-    def generate_auth_method_snippet(method_name)
+    def generate_auth_method_snippet(method_name, permissions)
         code = [
-            "def #{method_name}(context, data_dict=None):" ,
-            "\treturn {'success': False}" ,
+            "def #{method_name}(context, data_dict=None):"
         ]
+
+        if permissions[:anonymous]
+            code.insert(0, "@plugins.toolkit.auth_allow_anonymous_access")
+            code << "\treturn {'success': True}"
+        else
+            code << "\treturn {'success': False}"
+        end
+
         return _generate_code(code)
     end
 
@@ -63,16 +72,27 @@ generator_config = {
 }
 generator = AuthGenerator.new(generator_config)
 
+CSV::Converters[:plus_minus_boolean] = lambda do |value|
+    if value == "+"
+        return true
+    elsif value == "-"
+        return false
+    else
+        return value
+    end
+end
+
 File.open(python_out_path, "w") do |out|
 
     out.puts(generator.generate_boilerplate)
     out.puts
     method_names = []
 
-    CSV.foreach(csv_in_path, :headers => true) do |row|
-        method_name = row['descname']
+    CSV.foreach(csv_in_path, :headers => true, :converters => [:plus_minus_boolean], :header_converters => :symbol) do |row|
+        method_name = row[:descname]
         method_names << method_name
-        out.puts(generator.generate_auth_method_snippet(method_name))
+        permissions = row.to_hash.select {|key, value| [:anonymous, :logged_in, :same_org, :admin].include?(key) }
+        out.puts(generator.generate_auth_method_snippet(method_name, permissions))
         out.puts
     end
 
