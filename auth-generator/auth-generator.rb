@@ -19,7 +19,14 @@ class AuthGenerator
             "" ,
             "\# This is auto-generated code!" ,
             "" ,
+            "import logging" ,
             "import ckan.plugins as plugins" ,
+            "import ckan.model as model" ,
+            "from ckan.common import c" ,
+            "" ,
+            "log = logging.getLogger(__name__)" ,
+            "" ,
+            "" ,
         ]
         return _generate_code(code)
     end
@@ -30,7 +37,7 @@ class AuthGenerator
             "\tplugins.implements(plugins.IAuthFunctions)" ,
             "\t" ,
             "\tdef get_auth_functions(self):" ,
-            "\t\treturn {"
+            "\t\treturn {" ,
         ]
 
         method_names.each do |method_name|
@@ -48,9 +55,11 @@ class AuthGenerator
 
         if permissions[:anonymous]
             code.insert(0, "@plugins.toolkit.auth_allow_anonymous_access")
-            code << "\treturn {'success': True}"
+            code << "\treturn { 'success': True }"
+        elsif permissions[:admin]
+            code << "\treturn { 'success': c.userobj.sysadmin }"
         else
-            code << "\treturn {'success': False}"
+            code << "\treturn { 'success': False }"
         end
 
         return _generate_code(code)
@@ -82,6 +91,8 @@ CSV::Converters[:plus_minus_boolean] = lambda do |value|
     end
 end
 
+puts  "generating #{python_out_path} from #{csv_in_path} ..."
+
 File.open(python_out_path, "w") do |out|
 
     out.puts(generator.generate_boilerplate)
@@ -99,3 +110,5 @@ File.open(python_out_path, "w") do |out|
     out.puts(generator.generate_plugin_class(plugin_class_name, method_names))
     out.puts
 end
+
+puts "... done."
