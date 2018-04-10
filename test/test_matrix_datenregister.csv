@@ -1,0 +1,13 @@
+title,object_type,action,modifier,anonymous,user_none,user_a,user_b,sysadmin
+Create dataset (no org),package,create,noorg,-,-,-,-,+
+Read dataset (no org),package,show,noorg,-,-,-,-,+
+Update dataset (no org),package,update,noorg,-,-,-,-,+
+Delete dataset (no org),package,delete,noorg,-,-,-,-,+
+Create dataset (Org A),package,create,org_a,-,-,-,-,+
+Read dataset (Org A),package,show,org_a,-,-,-,-,+
+Update dataset (Org A),package,update,org_a,-,-,-,-,+
+Delete dataset (Org A),package,delete,org_a,-,-,-,-,+
+Create dataset (Org B),package,create,org_b,-,-,-,-,+
+Read dataset (Org B),package,show,org_b,-,-,-,-,+
+Update dataset (Org B),package,update,org_b,-,-,-,-,+
+Delete dataset (Org B),package,delete,org_b,-,-,-,-,+

@@ -1,0 +1,42 @@
+import unittest
+from ckanapi import RemoteCKAN
+
+class TestPackageActions(unittest.TestCase):
+
+    def setUp(self):
+        self.apikey_user_a = "xxxxx"
+        self.apikey_user_b = "yyyyy"
+        self.user_agent = "ckan_auth_tester"
+        self.ckan_url = "http://datenregister.local:5000"
+
+        self.connection_anonymous = RemoteCKAN(self.ckan_url, user_agent=self.user_agent)
+        self.connection_user_a = RemoteCKAN(self.ckan_url, user_agent=self.user_agent, apikey=self.apikey_user_a)
+        self.connection_user_b = RemoteCKAN(self.ckan_url, user_agent=self.user_agent, apikey=self.apikey_user_b)
+
+        self.package_noorg = "datensatz-no-org"
+        self.package_group_a = "datensatz-a"
+        self.package_group_b = "datensatz-b"
+
+
+    def test_read_noorg_anonymous(self):
+        try:
+            result = self.connection_anonymous.action.package_show(id=self.package_noorg)
+            result = {
+                "success": True ,
+                "result": result
+            }
+        except CKANAPIError as e:
+            print("Exception occured: {}".format(e))
+            result = {
+                "success": False ,
+                "message": e.extra_msg
+            }
+
+        self.assertFalse(result['success'])
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+

@@ -1,0 +1,78 @@
+{
+    "ckan_url": "http://datenregister.local:5000" ,
+    "user_agent": "ckan_auth_tester" ,
+    "packages": {
+        "setup": {
+            "package_noorg": {
+                "name": "package_noorg" ,
+                "title": "Datensatz No-Org"
+            } ,
+            "package_org_a": {
+                "name": "package_org_a" ,
+                "title": "Datensatz A" ,
+                "owner_org": "organization_a"
+            } ,
+            "package_org_b": {
+                "name": "package_org_b" ,
+                "title": "Datensatz B" ,
+                "owner_org": "organization_b"
+            }
+        } ,
+        "create": {
+            "package_noorg_2": {
+                "name": "package_noorg_2" ,
+                "title": "Datensatz No-Org"
+            } ,
+            "package_org_a_2": {
+                "name": "package_org_a_2" ,
+                "title": "Datensatz A" ,
+                "owner_org": "organization_a"
+            } ,
+            "package_org_b_2": {
+                "name": "package_org_b_2" ,
+                "title": "Datensatz B" ,
+                "owner_org": "organization_b"
+            }                
+        }
+    } ,
+    "organizations": {
+        "setup": {
+            "organization_a": {
+                "name": "organization_a" ,
+                "title": "Organisation A"
+            } ,
+            "organization_b": {
+                "name": "organization_b" ,
+                "title": "Organisation B"
+            }    
+        } ,
+        "create": {
+            "organization_c": {
+                "name": "organization_c" ,
+                "title": "Organisation C"
+            }
+        }
+    } ,
+    "users": {
+        "setup": {
+            "user_none" : {
+                "fullname": "User None"
+            } ,
+            "user_a": {
+                "fullname": "User A"
+            } ,
+            "user_b": {
+                "fullname": "User B"
+            } ,
+            "sysadmin": {
+                "fullname": "Sysadmin" ,
+                "sysadmin": true
+            }
+        } ,
+        "create": {
+            "user_c": {
+                "fullname": "User C"
+            }
+        }
+    }
+}

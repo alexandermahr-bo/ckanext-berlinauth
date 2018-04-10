@@ -1,0 +1,101 @@
+# encoding: utf-8
+
+import json
+import logging
+import unittest
+import sys
+from ckanapi import RemoteCKAN, CKANAPIError
+
+#class TestPackageActions(unittest.TestCase):
+class TestPackageActions():
+
+    def setUp(self):
+        self.log = logging.getLogger( __file__ )
+        self.test_result = {
+            "success": [] ,
+            "fail": []
+        }
+        self.user_agent = "{{ config['user_agent'] }}"
+        self.ckan_url = "{{ config['ckan_url'] }}"
+
+        self.connections = {
+            {% for user_id, user in config.users.iteritems() %}
+            "{{ user_id }}": RemoteCKAN(self.ckan_url, user_agent=self.user_agent{% if user.apikey %}, apikey="{{ user.apikey }}"{% endif %}) ,
+            {% endfor %}
+        }
+
+        self.packages = {
+            {% for package_id, package in config.packages.iteritems() %}
+            "{{ package_id }}": {
+                {% for key, value in package.iteritems() %}
+                "{{ key }}": "{{ value }}" ,
+                {% endfor %}
+            } ,
+            {% endfor %}
+        }
+
+    def _assert_equal(self, actual, expected, method_name):
+        if actual == expected:
+            self.log.debug("\tTest successful")
+            self.test_result['success'].append(method_name)
+        else:
+            fail_message = "{} (actual) is not {} (expected)".format(actual, expected)
+            self.log.debug("\tTest failed: {}".format(fail_message))
+            self.test_result['fail'].append({ "method": method_name, "reason": fail_message})
+
+{% for user_id in config.users.keys() %}
+{% set outer_loop = loop %}
+{% for method in matrix %}
+    {% set method_name = "test_" + (outer_loop.index|string).rjust(2, '0') + "_" + (loop.index|string).rjust(2, '0') + "_" + method.action + "__" + method.modifier + "__" +  user_id %}
+    def {{ method_name }}(self):
+        self.log.setLevel( logging.DEBUG )
+        self.log.debug(" start {{ method_name }} ...")
+        package = self.packages['{{ method.object_type + "_" + method.modifier }}']
+        data = {
+            'id': package['name']
+        }
+        {% if method.action == "create" %}
+        data['title'] = package['title']
+        if 'owner_org' in package:
+            data['owner_org'] = package['owner_org']
+        {% endif %}
+        try:
+            result = self.connections['{{ user_id }}'].call_action('{{ method.object_type }}_{{ method.action }}', data)
+            result = {
+                "success": True ,
+                "result": result
+            }
+            self.log.debug("\tsuccess.")
+        except CKANAPIError as e:
+            print("\tException occured: {}".format(e))
+            result = {
+                "success": False ,
+                "message": e
+            }
+
+        # self.assertEqual(result['success'], {{ method[user_id] }})
+        self._assert_equal(result['success'], {{ method[user_id] }}, '{{ method_name }}')
+        self.log.debug(" ... done")
+        self.log.debug(" -----------------------")
+        
+{% endfor %}
+{% endfor %}
+
+# if __name__ == '__main__':
+    # logging.basicConfig( stream=sys.stderr )
+    # unittest.main()
+
+logging.basicConfig( stream=sys.stderr )
+tester = TestPackageActions()
+tester.setUp()
+
+{% for user_id in config.users.keys() %}
+{% set outer_loop = loop %}
+{% for method in matrix %}
+{% set method_name = "test_" + (outer_loop.index|string).rjust(2, '0') + "_" + (loop.index|string).rjust(2, '0') + "_" + method.action + "__" + method.modifier + "__" +  user_id %}
+tester.{{ method_name }}()
+{% endfor %}
+{% endfor %}
+
+with open('results.json', 'w') as outfile:
+    json.dump(tester.test_result, outfile, indent=4)
